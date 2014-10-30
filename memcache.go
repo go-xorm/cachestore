@@ -1,7 +1,7 @@
 package cachestore
 
 import (
-	"coscms/app/base/lib/cachestore/memcache"
+	"github.com/go-xorm/cachestore/memcache"
 	"encoding/json"
 	"errors"
 	"fmt"

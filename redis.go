@@ -1,7 +1,7 @@
 package cachestore
 
 import (
-	"coscms/app/base/lib/cachestore/redigo/redis"
+	"github.com/go-xorm/cachestore/redigo/redis"
 	"encoding/json"
 	"errors"
 	"fmt"
