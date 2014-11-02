@@ -7,7 +7,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 )
+
+func init() {
+	log.SetFlags(log.Ldate | log.Ltime)
+}
 
 // md5 hash string
 func Md5(str string) string {

@@ -44,7 +44,7 @@ func main() {
 		if len(cfg) == 2 {
 			conn = cfg[1]
 		}
-		ccStore := cachestore.NewMemCache(conn)
+		ccStore := cachestore.NewMemCache(strings.Split(conn, ";"))
 		//this.CacheStore = ccStore
 		//ccStore.Debug = this.ShowDebug
 		cacher = xorm.NewLRUCacher(ccStore, 999999999)

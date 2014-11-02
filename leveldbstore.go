@@ -1,7 +1,8 @@
 package cachestore
 
 import (
-	"fmt"
+	"log"
+
 	"github.com/syndtr/goleveldb/leveldb"
 	//"reflect"
 )
@@ -26,15 +27,20 @@ func NewLevelDBStore(dbfile string) *LevelDBStore {
 func (s *LevelDBStore) Put(key string, value interface{}) error {
 	val, err := Encode(value)
 	if err != nil {
-		fmt.Println("[LevelDB]EncodeErr: ", err)
+		if s.Debug {
+			log.Println("[LevelDB]EncodeErr: ", err, "Key:", key)
+		}
 		return err
 	}
 	err = s.store.Put([]byte(key), val, nil)
 	if err != nil {
-		fmt.Println("[LevelDB]PutErr: ", err)
+		if s.Debug {
+			log.Println("[LevelDB]PutErr: ", err, "Key:", key)
+		}
+		return err
 	}
 	if s.Debug {
-		fmt.Println("[LevelDB]Put: ", key)
+		log.Println("[LevelDB]Put: ", key)
 	}
 	return err
 }
@@ -42,16 +48,21 @@ func (s *LevelDBStore) Put(key string, value interface{}) error {
 func (s *LevelDBStore) Get(key string) (interface{}, error) {
 	data, err := s.store.Get([]byte(key), nil)
 	if err != nil {
-		fmt.Println("[LevelDB]GetErr: ", err)
+		if s.Debug {
+			log.Println("[LevelDB]GetErr: ", err, "Key:", key)
+		}
 		return nil, err
 	}
 
 	err = Decode(data, &s.v)
 	if err != nil {
-		fmt.Println("[LevelDB]DecodeErr: ", err)
+		if s.Debug {
+			log.Println("[LevelDB]DecodeErr: ", err, "Key:", key)
+		}
+		return nil, err
 	}
 	if s.Debug {
-		fmt.Println("[LevelDB]Get: ", key, s.v)
+		log.Println("[LevelDB]Get: ", key, s.v)
 	}
 	return s.v, err
 }
@@ -59,11 +70,13 @@ func (s *LevelDBStore) Get(key string) (interface{}, error) {
 func (s *LevelDBStore) Del(key string) error {
 	err := s.store.Delete([]byte(key), nil)
 	if err != nil {
-		fmt.Println("[LevelDB]DelErr: ", err)
+		if s.Debug {
+			log.Println("[LevelDB]DelErr: ", err, "Key:", key)
+		}
 		return err
 	}
 	if s.Debug {
-		fmt.Println("[LevelDB]Del: ", key)
+		log.Println("[LevelDB]Del: ", key)
 	}
 	return err
 }

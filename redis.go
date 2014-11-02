@@ -4,7 +4,7 @@ import (
 	"github.com/go-xorm/cachestore/redigo/redis"
 	"encoding/json"
 	"errors"
-	"fmt"
+	"log"
 )
 
 var (
@@ -47,16 +47,21 @@ func (rc *RedisCache) Get(key string) (interface{}, error) {
 	}
 	val, err := rc.c.Do("HGET", rc.key, key)
 	if err != nil {
-		fmt.Println("[Redis]GetErr: ", err)
+		if rc.Debug {
+			log.Println("[Redis]GetErr: ", err, "Key:", key)
+		}
 		return nil, err
 	}
 	var v interface{}
 	err = Decode(val.([]byte), &v)
 	if err != nil {
-		fmt.Println("[Redis]DecodeErr: ", err)
+		if rc.Debug {
+			log.Println("[Redis]DecodeErr: ", err, "Key:", key)
+		}
+		return nil, err
 	}
 	if rc.Debug {
-		fmt.Println("[Redis]Get: ", key)
+		log.Println("[Redis]Get: ", key)
 	}
 	return v, err
 }
@@ -73,15 +78,20 @@ func (rc *RedisCache) Put(key string, value interface{}) error {
 	}
 	val, err := Encode(value)
 	if err != nil {
-		fmt.Println("[Redis]EncodeErr: ", err)
+		if rc.Debug {
+			log.Println("[Redis]EncodeErr: ", err, "Key:", key)
+		}
 		return err
 	}
 	_, err = rc.c.Do("HSET", rc.key, key, val)
 	if err != nil {
-		fmt.Println("[Redis]PutErr: ", err)
+		if rc.Debug {
+			log.Println("[Redis]PutErr: ", err, "Key:", key)
+		}
+		return err
 	}
 	if rc.Debug {
-		fmt.Println("[Redis]Put: ", key)
+		log.Println("[Redis]Put: ", key)
 	}
 	return err
 }
@@ -97,10 +107,13 @@ func (rc *RedisCache) Del(key string) error {
 	}
 	_, err := rc.c.Do("HDEL", rc.key, key)
 	if err != nil {
-		fmt.Println("[Redis]DelErr: ", err)
+		if rc.Debug {
+			log.Println("[Redis]DelErr: ", err, "Key:", key)
+		}
+		return err
 	}
 	if rc.Debug {
-		fmt.Println("[Redis]Del: ", key)
+		log.Println("[Redis]Del: ", key)
 	}
 	return err
 }
@@ -122,7 +135,7 @@ func (rc *RedisCache) IsExist(key string) bool {
 }
 
 // increase counter in redis.
-func (rc *RedisCache) Incr(key string) error {
+func (rc *RedisCache) Incr(key string, delta uint64) error {
 	if rc.c == nil {
 		var err error
 		rc.c, err = rc.connectInit()
@@ -130,7 +143,7 @@ func (rc *RedisCache) Incr(key string) error {
 			return err
 		}
 	}
-	_, err := redis.Bool(rc.c.Do("HINCRBY", rc.key, key, 1))
+	_, err := redis.Bool(rc.c.Do("HINCRBY", rc.key, key, delta))
 	if err != nil {
 		return err
 	}
@@ -138,7 +151,7 @@ func (rc *RedisCache) Incr(key string) error {
 }
 
 // decrease counter in redis.
-func (rc *RedisCache) Decr(key string) error {
+func (rc *RedisCache) Decr(key string, delta uint64) error {
 	if rc.c == nil {
 		var err error
 		rc.c, err = rc.connectInit()
@@ -146,7 +159,7 @@ func (rc *RedisCache) Decr(key string) error {
 			return err
 		}
 	}
-	_, err := redis.Bool(rc.c.Do("HINCRBY", rc.key, key, -1))
+	_, err := redis.Bool(rc.c.Do("HINCRBY", rc.key, key, -delta))
 	if err != nil {
 		return err
 	}
