@@ -7,7 +7,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/cachestore"
-	//"github.com/go-xorm/core"
 	"github.com/go-xorm/xorm"
 )
 
@@ -28,16 +27,13 @@ func main() {
 	switch strings.ToLower(cfg[0]) {
 	case "memory":
 		ccStore := xorm.NewMemoryStore()
-		//this.CacheStore = ccStore
-		cacher = xorm.NewLRUCacher(ccStore, 1000) //NewLRUCacher(store core.CacheStore, maxElementSize int)
+		cacher = xorm.NewLRUCacher(ccStore, 1000)
 	case "leveldb":
 		storagePath := CacheDir + "/leveldb/dbcache"
 		if len(cfg) == 2 {
 			storagePath = cfg[1]
 		}
 		ccStore := cachestore.NewLevelDBStore(storagePath)
-		//this.CacheStore = ccStore
-		//ccStore.Debug = this.ShowDebug
 		cacher = xorm.NewLRUCacher(ccStore, 999999999)
 	case "memcache":
 		conn := "127.0.0.1:11211"
@@ -45,8 +41,6 @@ func main() {
 			conn = cfg[1]
 		}
 		ccStore := cachestore.NewMemCache(strings.Split(conn, ";"))
-		//this.CacheStore = ccStore
-		//ccStore.Debug = this.ShowDebug
 		cacher = xorm.NewLRUCacher(ccStore, 999999999)
 	}
 	if cacher != nil {
