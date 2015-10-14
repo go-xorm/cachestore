@@ -52,7 +52,6 @@ cachestore 是一个用于 `xorm` 的缓存包，目前支持的缓存引擎有�
 		}
 		storagePath := "data/leveldb/dbcache"
 		ccStore := cachestore.NewLevelDBStore(storagePath)
-		ccStore := xorm.NewMemoryStore()
 		cacher := xorm.NewLRUCacher(ccStore, 99999999)
 		engine.SetDefaultCacher(cacher)
 		
