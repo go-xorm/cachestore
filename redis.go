@@ -1,9 +1,9 @@
 package cachestore
 
 import (
-	"github.com/go-xorm/cachestore/redigo/redis"
 	"encoding/json"
 	"errors"
+	"github.com/go-xorm/cachestore/redigo/redis"
 	"log"
 )
 
@@ -17,6 +17,7 @@ type RedisCache struct {
 	c        redis.Conn
 	conninfo string
 	key      string
+	password string
 	Debug    bool
 }
 
@@ -26,6 +27,10 @@ func NewRedisCache(cf map[string]string) *RedisCache {
 	if _, ok := cf["key"]; !ok {
 		cf["key"] = DefaultKey
 	}
+	if _, ok := cf["password"]; !ok {
+		cf["password"] = ""
+	}
+	rc.password = cf["password"]
 	rc.key = cf["key"]
 	rc.conninfo = cf["conn"]
 	var err error
@@ -210,6 +215,12 @@ func (rc *RedisCache) connectInit() (redis.Conn, error) {
 	c, err := redis.Dial("tcp", rc.conninfo)
 	if err != nil {
 		return nil, err
+	}
+	if rc.password != "" {
+		if _, err := c.Do("AUTH", rc.password); err != nil {
+			c.Close()
+			return nil, err
+		}
 	}
 	return c, nil
 }
