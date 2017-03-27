@@ -36,6 +36,7 @@ func NewRedisCache(cf map[string]string) *RedisCache {
 	var err error
 	rc.c, err = rc.connectInit()
 	if err != nil {
+		log.Println("[Redis]InitErr: ", err)
 		rc.c = nil
 	}
 	return rc
@@ -58,7 +59,9 @@ func (rc *RedisCache) Get(key string) (interface{}, error) {
 		return nil, err
 	}
 	var v interface{}
-	err = Decode(val.([]byte), &v)
+	x, _ := val.([]byte)
+
+	err = Decode(x, &v)
 	if err != nil {
 		if rc.Debug {
 			log.Println("[Redis]DecodeErr: ", err, "Key:", key)
